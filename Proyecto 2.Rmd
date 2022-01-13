@@ -1,0 +1,111 @@
+---
+title: "Proyecto 2. Supervivencia. Estadística 3."
+author: "Adame Serrano Eduardo,Alvarado Perez Cesar Porfirio, Barranco Cruz Luis Fernando, Pérez Gutierres Brian" 
+output: 
+  html_document:
+    theme: darkly
+    toc: FALSE
+    toc_depth: 3
+    toc_float:
+      collapsed: TRUE
+      smooth_scroll : TRUE
+      number_sections : TRUE
+    df_print: paged
+---
+
+
+```{r Paqueterias, include=FALSE}
+ 
+library(survival)
+library(KMsurv)
+library(survMisc)
+library(survminer)
+library(ggfortify)
+library(flexsurv)
+library(actuar)
+library(dplyr)
+library(KMsurv)
+```
+
+# {.tabset .tabset-fade .tabset-pills}
+
+## Introducción. {.tabset .tabset-fade .tabset-pills}
+
+
+Los siguientes datos contienen la información recopilada del ensayo de la Mayo Clinic sobre cirrosis biliar primaria (CBP) del hígado realizado entre 1974 y 1984.
+
+```{r Lectura base, echo=FALSE}
+datos = read.csv("cirrhosis.csv")
+head(datos)
+confint(datos)
+```
+
+Un total de 424 pacientes con CBP, remitidos a Mayo Clinic durante ese intervalo de diez años, cumplieron con los criterios de elegibilidad para el ensayo aleatorizado controlado con placebo del fármaco D-penicilamina. Los primeros 312 casos del conjunto de datos participaron en el ensayo aleatorizado y contienen datos en gran parte completos. Los 112 casos adicionales no participaron en el ensayo clínico, pero consintieron en que se registraran las mediciones básicas y se les hiciera seguimiento para la supervivencia. Seis de esos casos se perdieron durante el seguimiento poco después del diagnóstico, por lo que los datos aquí corresponden a 106 casos adicionales, así como a los 312 participantes asignados al azar dando un total de 418 participantes.
+
+## Análisis descriptivo
+
+```{r Estados plot, echo=FALSE, warning=FALSE}
+plot_estados = ggplot(data=datos, aes(x=Stage,fill = Status) )
+        
+plot_estados +    geom_histogram(binwidth = .5) +labs(x = "Etapa histológica de la enfermedad", y="Número de pacientes", fill= "Estado")
+```
+
+Donde C representa el estado censurado, CL a su vez representa un paciente censurado por transmisión hepática y finalmente D para la muerte del paciente.
+
+
+```{r Conversion de los años, include=FALSE}
+anios_paciente = datos$Age/365 
+anios_paciente = round(anios_paciente,digits = 0)
+anios_paciente
+```
+
+Debido a que en la base de datos original, los años de los pacientes se presentan en días, entonces para una mejor interpretación se convierte la variable de edad en días a una variable de edad en años (evidentemente redondeamos dicha variable).
+
+
+```{r Edades, echo=FALSE}
+edades = ggplot(datos,aes(x=anios_paciente, fill = anios_paciente))
+
+edades + geom_histogram(binwidth = .7)  + labs(x ="Edad del paciente", y= "Número de pacientes")
+```
+
+De lo anterior notamos que tenemos una mayor concentración de pacientes en edades entre los 40 y 60 años, presentando la mayor concentración de todas, en los pacientes de edad 55 aproximadamente.
+
+
+
+Posterior a ello, analizaremos la cantidad de hombres y mujeres en dicho estudio 
+```{r Sexo, echo=FALSE}
+sexo = ggplot(datos , aes(Sex,y = (..count..)/sum(..count..), fill = Sex))
+
+sexo + geom_bar(width =0.4)+ labs(x = "Sexo" , fill = "Sexo") +
+  scale_y_continuous("Porcentaje",labels=scales::percent)
+```
+
+Se observa claramente que predomina el sexo femenino, teniendo alrededor del 89% de la población en cuestión.
+
+
+Posteriormente creamos un objeto de supervivencia que vaya en relación al tiempo y fallas (censuras) 
+
+```{r include=FALSE}
+estado = c(datos$Status)
+estados_df = split(datos, f=factor(datos$Status))
+```
+
+
+
+
+```{r include=FALSE}
+id_D = c(estados_df$D[1])
+id_D
+id_C = c(estados_df$C[1])
+id_C
+id_CL = c(estados_df$CL[1])
+id_CL
+```
+
+```{r}
+dim(id_D) + dim(id_C)
+```
+ 
+
+
+
