@@ -1,0 +1,335 @@
+---
+title: "Proyecto 2. Supervivencia. Estadística 3."
+author: "Adame Serrano Eduardo,Alvarado Perez Cesar Porfirio, Barranco Cruz Luis Fernando, Pérez Gutierres Brian" 
+output: 
+  html_document:
+    theme: darkly
+    toc: FALSE
+    toc_depth: 3
+    toc_float:
+      collapsed: TRUE
+      smooth_scroll : TRUE
+      number_sections : TRUE
+    df_print: paged
+---
+
+
+```{r Paqueterias, include=FALSE}
+ 
+library(survival)
+library(KMsurv)
+library(survMisc)
+library(survminer)
+library(ggfortify)
+library(flexsurv)
+library(actuar)
+library(dplyr)
+library(KMsurv)
+```
+
+# {.tabset .tabset-fade .tabset-pills}
+
+## Introducción. {.tabset .tabset-fade .tabset-pills}
+
+
+Los siguientes datos contienen la información recopilada del ensayo de la Mayo Clinic sobre cirrosis biliar primaria (CBP) del hígado realizado entre 1974 y 1984.
+
+```{r Lectura base, echo=FALSE}
+datos = read.csv("cirrhosis.csv")
+head(datos)
+```
+
+Un total de 424 pacientes con CBP, remitidos a Mayo Clinic durante ese intervalo de diez años, cumplieron con los criterios de elegibilidad para el ensayo aleatorizado controlado con placebo del fármaco D-penicilamina. Los primeros 312 casos del conjunto de datos participaron en el ensayo aleatorizado y contienen datos en gran parte completos. Los 112 casos adicionales no participaron en el ensayo clínico, pero consintieron en que se registraran las mediciones básicas y se les hiciera seguimiento para la supervivencia. Seis de esos casos se perdieron durante el seguimiento poco después del diagnóstico, por lo que los datos aquí corresponden a 106 casos adicionales, así como a los 312 participantes asignados al azar dando un total de 418 participantes.
+
+## Análisis descriptivo
+
+```{r Estados plot, echo=FALSE, warning=FALSE}
+plot_estados = ggplot(data=datos, aes(x=Stage,fill = Status) )
+        
+plot_estados +    geom_histogram(binwidth = .5) +labs(x = "Etapa histológica de la enfermedad", y="Número de pacientes", fill= "Estado")
+```
+
+Donde C representa el estado censurado, CL a su vez representa un paciente censurado por transplante hepático y finalmente D para la muerte del paciente.
+
+
+```{r Conversion de los años, include=FALSE}
+anios_paciente = datos$Age/365 
+anios_paciente = round(anios_paciente,digits = 0)
+anios_paciente
+```
+
+Debido a que en la base de datos original, los años de los pacientes se presentan en días, entonces para una mejor interpretación se convierte la variable de edad en días a una variable de edad en años (evidentemente redondeamos dicha variable).
+
+
+```{r Edades, echo=FALSE}
+edades = ggplot(datos,aes(x=anios_paciente, fill = anios_paciente))
+
+edades + geom_histogram(binwidth = .7)  + labs(x ="Edad del paciente", y= "Número de pacientes")
+```
+
+De lo anterior notamos que tenemos una mayor concentración de pacientes en edades entre los 40 y 60 años, presentando la mayor concentración de todas, en los pacientes de edad 55 aproximadamente.
+
+
+
+Posterior a ello, analizaremos la cantidad de hombres y mujeres en dicho estudio 
+```{r Sexo, echo=FALSE}
+sexo = ggplot(datos , aes(Sex,y = (..count..)/sum(..count..), fill = Sex))
+
+sexo + geom_bar(width =0.4)+ labs(x = "Sexo" , fill = "Sexo") +
+  scale_y_continuous("Porcentaje",labels=scales::percent)
+```
+
+Se observa claramente que predomina el sexo femenino, teniendo alrededor del 89% de la población en cuestión.
+
+
+Posteriormente creamos un objeto de supervivencia que vaya en relación al tiempo y fallas (censuras) 
+
+```{r include=FALSE}
+estado = c(datos$Status)
+estados_df = split(datos, f=factor(datos$Status))
+estados_df
+```
+
+
+
+
+```{r include=FALSE}
+id_D = c(estados_df$D[1])
+id_D
+id_C = c(estados_df$C[1])
+id_C
+id_CL = c(estados_df$CL[1])
+id_CL
+
+```
+
+```{r Censuras tipo C, echo=FALSE}
+delta = c()
+for(i in 1:length(estado)){
+  if(estado[i] == "D"){
+    delta[i] = 1
+  }else if(estado[i]=="C"){
+    delta[i] = 0
+  }else if(estado[i] == "CL"){
+    delta[i] = 0
+  }
+  delta
+}
+```
+ 
+
+
+
+Para el análisis de supervivencia hemos agrupado en la base los dos tipos de censura, para únicamente tener un tipo, por los tipos de censura que teníamos, particularmente "C" y "CL".
+
+Representamos gráficamente el número de pacientes que fueron observados como falla o censura de acuerdo al sexo.
+
+
+
+```{r echo=FALSE}
+ggplot(data=datos,aes(x=delta, fill = datos$Sex)) +geom_histogram(binwidth = .5) +labs(x = "Falla o censura", y="Número de pacientes", fill= "Sexo")
+
+```
+
+## Estimador Kaplan-Meier de la población
+
+```{r include=FALSE}
+base_nueva = cbind(datos, delta)
+base_nueva
+```
+
+
+Creamos nuestro objeto de supervivencia, de acuerdo al número de días. 
+
+```{r echo=FALSE}
+objeto= Surv(time = base_nueva$N_Days,event = base_nueva$delta) #observamos fallas y censuras por cada tiempo
+ajuste <- survfit(Surv(time = base_nueva$N_Days,event = base_nueva$delta)~1, type = "kaplan-meier", conf.type="plain", conf.int=0.95, data = base_nueva)
+### conf.type="none","plain","log","log-log"
+ajuste
+```
+
+
+Plot
+
+```{r echo=FALSE}
+plot(ajuste, main = "Estimador Kaplan-Meier", xlab =  "t",
+     col = "red", ylab = "S(t)", lwd = 3,
+     conf.int = TRUE, las=2,xlim = c(0,5500))
+```
+
+
+## Variables que afectan el tiempo de supervivencia
+
+Seleccionamos las variables a trabajar que son significativas.
+
+### Sexo
+```{r include=FALSE}
+#Variable sexo
+mujeres = subset(x=base_nueva,base_nueva$Sex == "F")
+head(mujeres)
+hombres = subset(x=base_nueva,base_nueva$Sex == "M") 
+head(hombres)
+```
+
+
+
+```{r include=FALSE}
+ajuste_sexo_h <- survfit(Surv(time = hombres$N_Days,event = hombres$delta)~1, type = "kaplan-meier", conf.type="plain", conf.int=0.95, data = hombres)
+### conf.type="none","plain","log","log-log"
+plot(ajuste_sexo_h)
+```
+
+
+```{r include=FALSE}
+ajuste_sexo_m <- survfit(Surv(time = mujeres$N_Days,event = mujeres$delta)~1, type = "kaplan-meier", conf.type="plain", conf.int=0.95, data = mujeres) 
+### conf.type="none","plain","log","log-log"
+plot(ajuste_sexo_m) 
+```
+
+```{r echo=FALSE}
+plot(ajuste_sexo_h, col= "blue", main= "Estimador KM por sexo", lty = 1, lwd=3, xlim=c(0,4000),conf.int =F ) 
+par(new=T)
+plot(ajuste_sexo_m, col ="salmon",main= "", lty = 1, lwd=3, xlim=c(0,4000),conf.int =F)
+
+legend(x = "bottomleft", c("hombres","mujeres"), lty = 1,
+       col = c("blue", "salmon"), bty = "n") 
+legend(x = "bottomleft", c("hombres","mujeres"), lty = 1,
+       col = c("blue", "salmon"), bty = "n")
+```
+
+### Estado de la enfermedad
+
+```{r include=FALSE}
+#Variable sexo
+estado_1 = subset(x=base_nueva,base_nueva$Stage == "1")
+estado_2= subset(x=base_nueva,base_nueva$Stage == "2")
+estado_3 = subset(x=base_nueva,base_nueva$Stage== "3")
+estado_4 = subset(x=base_nueva,base_nueva$Stage == "4")
+```
+
+
+```{r include=FALSE}
+ajuste_estado_1 <- survfit(Surv(time = estado_1$N_Days,event = estado_1$delta)~1, type = "kaplan-meier", conf.type="plain", conf.int=0.95, data = estado_1)
+### conf.type="none","plain","log","log-log"
+plot(ajuste_estado_1)
+```
+
+
+```{r include=FALSE}
+ajuste_estado_2 <- survfit(Surv(time = estado_2$N_Days,event = estado_2$delta)~1, type = "kaplan-meier", conf.type="plain", conf.int=0.95, data = estado_2)
+### conf.type="none","plain","log","log-log"
+plot(ajuste_estado_2) 
+```
+
+
+```{r include=FALSE}
+ajuste_estado_3 <- survfit(Surv(time = estado_3$N_Days,event = estado_3$delta)~1, type = "kaplan-meier", conf.type="plain", conf.int=0.95, data = estado_3)
+### conf.type="none","plain","log","log-log"
+```
+
+
+```{r include=FALSE}
+ajuste_estado_4 <- survfit(Surv(time = estado_4$N_Days,event = estado_4$delta)~1, type = "kaplan-meier", conf.type="plain", conf.int=0.95, data = estado_4)
+### conf.type="none","plain","log","log-log"
+```
+
+
+```{r echo=FALSE}
+plot(ajuste_estado_1, col= "firebrick2", main= "Estimador KM por estado", lty = 1, lwd=3, xlim=c(0,5000),conf.int =F ) 
+par(new=T)
+plot(ajuste_estado_2, col ="green",main= "", lty = 1, lwd=3, xlim=c(0,5000),conf.int =F) 
+par(new=T)
+plot(ajuste_estado_3, col ="darkcyan",main= "", lty = 1, lwd=3, xlim=c(0,5000),conf.int =F) 
+par(new=T)
+plot(ajuste_estado_4, col ="violet", main= "", lty = 1, lwd=3, xlim=c(0,5000),conf.int =F) 
+legend(x = "bottomleft", c("estado 1","estado 2","estado 3","estado 4"), lty = 1,
+       col = c("red", "purple","green","blue"), bty = "n") 
+legend(x = "bottomleft", c("estado 1","estado 2","estado 3","estado 4"), lty = 1,
+       col = c("red", "purple","green","blue"), bty = "n")
+estado_1 = subset(x=base_nueva,base_nueva$Stage == "1")
+estado_2= subset(x=base_nueva,base_nueva$Stage == "2")
+estado_3 = subset(x=base_nueva,base_nueva$Stage== "3")
+estado_4 = subset(x=base_nueva,base_nueva$Stage == "4")
+```
+
+### Hepatomegalia (Agrandamiento del hígado más de lo normal)
+
+```{r include=FALSE}
+#Variable sexo
+hep_si = subset(x=base_nueva,base_nueva$Hepatomegaly == "Y")
+hep_no = subset(x=base_nueva,base_nueva$Hepatomegaly == "N") 
+```
+
+
+```{r include=FALSE}
+ajuste_hep_si <- survfit(Surv(time = hep_si$N_Days,event = hep_si$delta)~1, type = "kaplan-meier", conf.type="plain", conf.int=0.95, data = hep_si)
+### conf.type="none","plain","log","log-log"
+plot(ajuste_hep_si)
+```
+
+
+```{r include=FALSE}
+ajuste_hep_no <- survfit(Surv(time = hep_no$N_Days,event = hep_no$delta)~1, type = "kaplan-meier", conf.type="plain", conf.int=0.95, data = hep_no) 
+### conf.type="none","plain","log","log-log"
+plot(ajuste_hep_no) 
+```
+
+```{r echo=FALSE}
+plot(ajuste_hep_si, col= "blue", main= "Estimador KM por Hepatomegalia", lty = 1, lwd=3, xlim=c(0,4000),conf.int =F ) 
+par(new=T)
+plot(ajuste_hep_no, col ="salmon",main= "", lty = 1, lwd=3, xlim=c(0,4000),conf.int =F)
+
+legend(x = "bottomleft", c("Con hepatomegalia","Sin hepatomegalia"), lty = 1,
+       col = c("blue", "salmon"), bty = "n") 
+legend(x = "bottomleft", c("Con hepatomegalia","Sin hepatomegalia"), lty = 1,
+       col = c("blue", "salmon"), bty = "n")
+```
+
+
+### Edema
+
+```{r include=FALSE}
+#Variable sexo
+ed_n = subset(x=base_nueva,base_nueva$Edema == "N")
+ed_s = subset(x=base_nueva,base_nueva$Edema == "S") 
+ed_y = subset(x=base_nueva,base_nueva$Edema == "Y")
+```
+
+Superviviencia N (sin edema y sin tratamiento con diuréticos para el edema)
+
+```{r include=FALSE}
+ajuste_ed_n <- survfit(Surv(time = ed_n$N_Days,event = ed_n$delta)~1, type = "kaplan-meier", conf.type="plain", conf.int=0.95, data = ed_n)
+### conf.type="none","plain","log","log-log"
+plot(ajuste_ed_n)
+```
+
+Superviviencia S (edema presente sin diuréticos o edema resuelto con diuréticos)
+
+```{r include=FALSE}
+ajuste_ed_s <- survfit(Surv(time = ed_s$N_Days,event = ed_s$delta)~1, type = "kaplan-meier", conf.type="plain", conf.int=0.95, data = ed_s) 
+### conf.type="none","plain","log","log-log"
+plot(ajuste_ed_s) 
+```
+
+Supervivencia Y (edema a pesar del tratamiento con diuréticos) 
+
+```{r include=FALSE}
+ajuste_ed_y <- survfit(Surv(time = ed_y$N_Days,event = ed_y$delta)~1, type = "kaplan-meier", conf.type="plain", conf.int=0.95, data = ed_y) 
+### conf.type="none","plain","log","log-log"
+```
+
+```{r echo=FALSE}
+plot(ajuste_ed_n, col= "blue", main= "Estimador KM por Edema", lty = 1, lwd=3, xlim=c(0,4000),conf.int =F ) 
+par(new=T)
+plot(ajuste_ed_s, col ="salmon",main= "", lty = 1, lwd=3, xlim=c(0,4000),conf.int =F)
+par(new=T)
+plot(ajuste_ed_y, col ="orange",main= "", lty = 1, lwd=3, xlim=c(0,4000),conf.int =F)
+
+legend(x = "bottomleft", c("N","S" , "Y"), lty = 1,
+       col = c("blue", "salmon", "orange"), bty = "n") 
+legend(x = "bottomleft", c("N","S", "Y"), lty = 1,
+       col = c("blue", "salmon", "orange"), bty = "n")
+```
+
+ 
+ 
