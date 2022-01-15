@@ -41,7 +41,9 @@ head(datos)
 
 Un total de 424 pacientes con CBP, remitidos a Mayo Clinic durante ese intervalo de diez años, cumplieron con los criterios de elegibilidad para el ensayo aleatorizado controlado con placebo del fármaco D-penicilamina. Los primeros 312 casos del conjunto de datos participaron en el ensayo aleatorizado y contienen datos en gran parte completos. Los 112 casos adicionales no participaron en el ensayo clínico, pero consintieron en que se registraran las mediciones básicas y se les hiciera seguimiento para la supervivencia. Seis de esos casos se perdieron durante el seguimiento poco después del diagnóstico, por lo que los datos aquí corresponden a 106 casos adicionales, así como a los 312 participantes asignados al azar dando un total de 418 participantes.
 
-## Análisis descriptivo
+## Análisis descriptivo {.tabset .tabset-fade .tabset-pills}
+
+### Características generales y particulares
 
 ```{r Estados plot, echo=FALSE, warning=FALSE}
 plot_estados = ggplot(data=datos, aes(x=Stage,fill = Status) )
@@ -131,7 +133,7 @@ ggplot(data=datos,aes(x=delta, fill = datos$Sex)) +geom_histogram(binwidth = .5)
 
 ```
 
-## Estimador Kaplan-Meier de la población
+### Estimador Kaplan-Meier de la población
 
 ```{r include=FALSE}
 base_nueva = cbind(datos, delta)
@@ -158,11 +160,11 @@ plot(ajuste, main = "Estimador Kaplan-Meier", xlab =  "t",
 ```
 
 
-## Variables que afectan el tiempo de supervivencia
+### Variables que afectan el tiempo de supervivencia
 
 Seleccionamos las variables a trabajar que son significativas.
 
-### Sexo
+# Sexo
 ```{r include=FALSE}
 #Variable sexo
 mujeres = subset(x=base_nueva,base_nueva$Sex == "F")
@@ -197,7 +199,7 @@ legend(x = "bottomleft", c("hombres","mujeres"), lty = 1,
        col = c("blue", "salmon"), bty = "n")
 ```
 
-### Estado de la enfermedad
+# Estado de la enfermedad
 
 ```{r include=FALSE}
 #Variable sexo
@@ -252,7 +254,7 @@ estado_3 = subset(x=base_nueva,base_nueva$Stage== "3")
 estado_4 = subset(x=base_nueva,base_nueva$Stage == "4")
 ```
 
-### Hepatomegalia (Agrandamiento del hígado más de lo normal)
+# Hepatomegalia (Agrandamiento del hígado más de lo normal)
 
 ```{r include=FALSE}
 #Variable sexo
@@ -286,7 +288,7 @@ legend(x = "bottomleft", c("Con hepatomegalia","Sin hepatomegalia"), lty = 1,
 ```
 
 
-### Edema
+# Edema
 
 ```{r include=FALSE}
 #Variable sexo
