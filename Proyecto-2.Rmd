@@ -237,13 +237,13 @@ ajuste_estado_4 <- survfit(Surv(time = estado_4$N_Days,event = estado_4$delta)~1
 
 
 ```{r echo=FALSE}
-plot(ajuste_estado_1, col= "firebrick2", main= "Estimador KM por estado", lty = 1, lwd=3, xlim=c(0,5000),conf.int =F ) 
+plot(ajuste_estado_1, col= "red", main= "Estimador KM por estado", lty = 1, lwd=3, xlim=c(0,5000),conf.int =F ) 
 par(new=T)
-plot(ajuste_estado_2, col ="green",main= "", lty = 1, lwd=3, xlim=c(0,5000),conf.int =F) 
+plot(ajuste_estado_2, col ="purple",main= "", lty = 1, lwd=3, xlim=c(0,5000),conf.int =F) 
 par(new=T)
-plot(ajuste_estado_3, col ="darkcyan",main= "", lty = 1, lwd=3, xlim=c(0,5000),conf.int =F) 
+plot(ajuste_estado_3, col ="green",main= "", lty = 1, lwd=3, xlim=c(0,5000),conf.int =F) 
 par(new=T)
-plot(ajuste_estado_4, col ="violet", main= "", lty = 1, lwd=3, xlim=c(0,5000),conf.int =F) 
+plot(ajuste_estado_4, col ="blue", main= "", lty = 1, lwd=3, xlim=c(0,5000),conf.int =F) 
 legend(x = "bottomleft", c("estado 1","estado 2","estado 3","estado 4"), lty = 1,
        col = c("red", "purple","green","blue"), bty = "n") 
 legend(x = "bottomleft", c("estado 1","estado 2","estado 3","estado 4"), lty = 1,
@@ -333,5 +333,50 @@ legend(x = "bottomleft", c("N","S", "Y"), lty = 1,
        col = c("blue", "salmon", "orange"), bty = "n")
 ```
 
- 
- 
+Vamos a proceder a elegir una variable que particione a nuestra población para contrastar el la supervivencia, en este caso será por estado de la enfermedad, es decir, que tan avanzada estaba la cirrocis. 
+
+
+$Ho:$ La supervivencia es la misma para tipo 1 y 2 de enfermedad  $VS$  $Ha: Son diferentes$.
+
+```{r echo=FALSE}
+
+est1_est2= subset(x = base_nueva, base_nueva$Stage == 1 | base_nueva$Stage== 2 ) #estado 1 y 2 de la enfermedad
+survdiff(Surv(N_Days, delta) ~ est1_est2$Stage, rho = 0, data =est1_est2 )
+
+```
+
+No hay evidencia para no rechazar $Ho$, entonces la supervivencia para hombres y mujeres con estado de enfermedad tipo 1 y 2, es la misma. 
+
+$Ho:$ La supervivencia es la misma para tipo 3 y 4 de enfermedad  $VS$  $Ha: Son diferentes$.
+
+```{r echo=FALSE}
+
+est3_est4= subset(x = base_nueva, base_nueva$Stage == 3 | base_nueva$Stage== 4 ) #estado 1 y 2 de la enfermedad
+survdiff(Surv(N_Days, delta) ~ est3_est4$Stage, rho = 0, data =est3_est4 )
+
+```
+
+Hay evidencia para rechazar $Ho$, entonces la supervivencia de tipo 3 y 4 no son iguales. 
+
+Concluimos que la población por estado de la enfermedad no tienen la misma función de supervivencia.
+
+Veamos qué pasa para la supervivencia por hepatomegalia,es decir, si la presentó el paciente o no. 
+
+```{r}
+base_hept= subset(x = base_nueva, base_nueva$Hepatomegaly == "Y" | base_nueva$Hepatomegaly == "N" ) 
+survdiff(Surv(N_Days, delta) ~ base_hept$Hepatomegaly, rho = 0, data =base_hept )
+```
+
+No hay evidencia para no rechazar $Ho$, entonces la supervivencia por hepatomegalia es diferente si el paciente la presenta o no.
+
+
+
+
+
+
+
+
+
+
+
+
