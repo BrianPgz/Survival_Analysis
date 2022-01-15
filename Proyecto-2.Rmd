@@ -164,7 +164,7 @@ plot(ajuste, main = "Estimador Kaplan-Meier", xlab =  "t",
 
 Seleccionamos las variables a trabajar que son significativas.
 
-# Sexo
+Sexo
 ```{r include=FALSE}
 #Variable sexo
 mujeres = subset(x=base_nueva,base_nueva$Sex == "F")
@@ -199,7 +199,7 @@ legend(x = "bottomleft", c("hombres","mujeres"), lty = 1,
        col = c("blue", "salmon"), bty = "n")
 ```
 
-# Estado de la enfermedad
+Estado de la enfermedad
 
 ```{r include=FALSE}
 #Variable sexo
@@ -254,7 +254,7 @@ estado_3 = subset(x=base_nueva,base_nueva$Stage== "3")
 estado_4 = subset(x=base_nueva,base_nueva$Stage == "4")
 ```
 
-# Hepatomegalia (Agrandamiento del hígado más de lo normal)
+Hepatomegalia (Agrandamiento del hígado más de lo normal)
 
 ```{r include=FALSE}
 #Variable sexo
@@ -288,7 +288,7 @@ legend(x = "bottomleft", c("Con hepatomegalia","Sin hepatomegalia"), lty = 1,
 ```
 
 
-# Edema
+Edema
 
 ```{r include=FALSE}
 #Variable sexo
