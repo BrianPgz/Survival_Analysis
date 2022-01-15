@@ -370,7 +370,7 @@ survdiff(Surv(N_Days, delta) ~ base_hept$Hepatomegaly, rho = 0, data =base_hept 
 No hay evidencia para no rechazar $Ho$, entonces la supervivencia por hepatomegalia es diferente si el paciente la presenta o no.
 
 
-
+## Modelo de riesgos proporcionales de Cox
 
 
 
