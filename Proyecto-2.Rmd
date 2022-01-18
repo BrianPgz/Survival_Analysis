@@ -86,7 +86,7 @@ Se observa claramente que predomina el sexo femenino, teniendo alrededor del 89%
 
 Posteriormente creamos un objeto de supervivencia que vaya en relación al tiempo y fallas (censuras) 
 
-```{r include=FALSE}
+```{r estados df, include=FALSE}
 estado = c(datos$Status)
 estados_df = split(datos, f=factor(datos$Status))
 estados_df
@@ -95,7 +95,7 @@ estados_df
 
 
 
-```{r include=FALSE}
+```{r ID´s, include=FALSE}
 id_D = c(estados_df$D[1])
 id_D
 id_C = c(estados_df$C[1])
@@ -128,14 +128,14 @@ Representamos gráficamente el número de pacientes que fueron observados como f
 
 
 
-```{r echo=FALSE}
-ggplot(data=datos,aes(x=delta, fill = datos$Sex)) +geom_histogram(binwidth = .5) +labs(x = "Falla o censura", y="Número de pacientes", fill= "Sexo")
+```{r Plot falla y censura por sexos, echo=FALSE}
+ggplot(data=datos,aes(x=delta, fill = Sex)) +geom_histogram(binwidth = .5) +labs(x = "Falla o censura", y="Número de pacientes", fill= "Sexo")
 
 ```
 
 ### Estimador Kaplan-Meier de la población
 
-```{r include=FALSE}
+```{r Base con delta, include=FALSE}
 base_nueva = cbind(datos, delta)
 base_nueva
 ```
@@ -143,7 +143,7 @@ base_nueva
 
 Creamos nuestro objeto de supervivencia, de acuerdo al número de días. 
 
-```{r echo=FALSE}
+```{r Objeto de supervivencia, echo=FALSE}
 objeto= Surv(time = base_nueva$N_Days,event = base_nueva$delta) #observamos fallas y censuras por cada tiempo
 ajuste <- survfit(Surv(time = base_nueva$N_Days,event = base_nueva$delta)~1, type = "kaplan-meier", conf.type="plain", conf.int=0.95, data = base_nueva)
 ### conf.type="none","plain","log","log-log"
@@ -153,7 +153,7 @@ ajuste
 
 Plot
 
-```{r echo=FALSE}
+```{r KM ajuste, echo=FALSE}
 plot(ajuste, main = "Estimador Kaplan-Meier", xlab =  "t",
      col = "red", ylab = "S(t)", lwd = 3,
      conf.int = TRUE, las=2,xlim = c(0,5500))
@@ -165,7 +165,7 @@ plot(ajuste, main = "Estimador Kaplan-Meier", xlab =  "t",
 Seleccionamos las variables a trabajar que son significativas.
 
 Sexo
-```{r include=FALSE}
+```{r Variables sexo, include=FALSE}
 #Variable sexo
 mujeres = subset(x=base_nueva,base_nueva$Sex == "F")
 head(mujeres)
@@ -175,20 +175,20 @@ head(hombres)
 
 
 
-```{r include=FALSE}
+```{r ajuste y plot sexo, include=FALSE}
 ajuste_sexo_h <- survfit(Surv(time = hombres$N_Days,event = hombres$delta)~1, type = "kaplan-meier", conf.type="plain", conf.int=0.95, data = hombres)
 ### conf.type="none","plain","log","log-log"
 plot(ajuste_sexo_h)
 ```
 
 
-```{r include=FALSE}
+```{r ajuste mujeres, include=FALSE}
 ajuste_sexo_m <- survfit(Surv(time = mujeres$N_Days,event = mujeres$delta)~1, type = "kaplan-meier", conf.type="plain", conf.int=0.95, data = mujeres) 
 ### conf.type="none","plain","log","log-log"
 plot(ajuste_sexo_m) 
 ```
 
-```{r echo=FALSE}
+```{r ajuste hombres, echo=FALSE}
 plot(ajuste_sexo_h, col= "blue", main= "Estimador KM por sexo", lty = 1, lwd=3, xlim=c(0,4000),conf.int =F ) 
 par(new=T)
 plot(ajuste_sexo_m, col ="salmon",main= "", lty = 1, lwd=3, xlim=c(0,4000),conf.int =F)
@@ -201,7 +201,7 @@ legend(x = "bottomleft", c("hombres","mujeres"), lty = 1,
 
 Estado de la enfermedad
 
-```{r include=FALSE}
+```{r Estados subset, include=FALSE}
 #Variable sexo
 estado_1 = subset(x=base_nueva,base_nueva$Stage == "1")
 estado_2= subset(x=base_nueva,base_nueva$Stage == "2")
@@ -210,33 +210,33 @@ estado_4 = subset(x=base_nueva,base_nueva$Stage == "4")
 ```
 
 
-```{r include=FALSE}
+```{r ajuste estado1, include=FALSE}
 ajuste_estado_1 <- survfit(Surv(time = estado_1$N_Days,event = estado_1$delta)~1, type = "kaplan-meier", conf.type="plain", conf.int=0.95, data = estado_1)
 ### conf.type="none","plain","log","log-log"
 plot(ajuste_estado_1)
 ```
 
 
-```{r include=FALSE}
+```{r ajuste estado 2, include=FALSE}
 ajuste_estado_2 <- survfit(Surv(time = estado_2$N_Days,event = estado_2$delta)~1, type = "kaplan-meier", conf.type="plain", conf.int=0.95, data = estado_2)
 ### conf.type="none","plain","log","log-log"
 plot(ajuste_estado_2) 
 ```
 
 
-```{r include=FALSE}
+```{r Ajuste estado3, include=FALSE}
 ajuste_estado_3 <- survfit(Surv(time = estado_3$N_Days,event = estado_3$delta)~1, type = "kaplan-meier", conf.type="plain", conf.int=0.95, data = estado_3)
 ### conf.type="none","plain","log","log-log"
 ```
 
 
-```{r include=FALSE}
+```{r Ajuste estado4, include=FALSE}
 ajuste_estado_4 <- survfit(Surv(time = estado_4$N_Days,event = estado_4$delta)~1, type = "kaplan-meier", conf.type="plain", conf.int=0.95, data = estado_4)
 ### conf.type="none","plain","log","log-log"
 ```
 
 
-```{r echo=FALSE}
+```{r Plot ajustes estados, echo=FALSE}
 plot(ajuste_estado_1, col= "red", main= "Estimador KM por estado", lty = 1, lwd=3, xlim=c(0,5000),conf.int =F ) 
 par(new=T)
 plot(ajuste_estado_2, col ="purple",main= "", lty = 1, lwd=3, xlim=c(0,5000),conf.int =F) 
@@ -256,27 +256,27 @@ estado_4 = subset(x=base_nueva,base_nueva$Stage == "4")
 
 Hepatomegalia (Agrandamiento del hígado más de lo normal)
 
-```{r include=FALSE}
+```{r hepatomegalia subsets, include=FALSE}
 #Variable sexo
 hep_si = subset(x=base_nueva,base_nueva$Hepatomegaly == "Y")
 hep_no = subset(x=base_nueva,base_nueva$Hepatomegaly == "N") 
 ```
 
 
-```{r include=FALSE}
+```{r Con hepatomegalia, include=FALSE}
 ajuste_hep_si <- survfit(Surv(time = hep_si$N_Days,event = hep_si$delta)~1, type = "kaplan-meier", conf.type="plain", conf.int=0.95, data = hep_si)
 ### conf.type="none","plain","log","log-log"
 plot(ajuste_hep_si)
 ```
 
 
-```{r include=FALSE}
+```{r Sin hepatomegalia, include=FALSE}
 ajuste_hep_no <- survfit(Surv(time = hep_no$N_Days,event = hep_no$delta)~1, type = "kaplan-meier", conf.type="plain", conf.int=0.95, data = hep_no) 
 ### conf.type="none","plain","log","log-log"
 plot(ajuste_hep_no) 
 ```
 
-```{r echo=FALSE}
+```{r Plot hepatomegalia, echo=FALSE}
 plot(ajuste_hep_si, col= "blue", main= "Estimador KM por Hepatomegalia", lty = 1, lwd=3, xlim=c(0,4000),conf.int =F ) 
 par(new=T)
 plot(ajuste_hep_no, col ="salmon",main= "", lty = 1, lwd=3, xlim=c(0,4000),conf.int =F)
@@ -290,7 +290,7 @@ legend(x = "bottomleft", c("Con hepatomegalia","Sin hepatomegalia"), lty = 1,
 
 Edema
 
-```{r include=FALSE}
+```{r Edema subsets, include=FALSE}
 #Variable sexo
 ed_n = subset(x=base_nueva,base_nueva$Edema == "N")
 ed_s = subset(x=base_nueva,base_nueva$Edema == "S") 
@@ -299,7 +299,7 @@ ed_y = subset(x=base_nueva,base_nueva$Edema == "Y")
 
 Superviviencia N (sin edema y sin tratamiento con diuréticos para el edema)
 
-```{r include=FALSE}
+```{r Edema N , include=FALSE}
 ajuste_ed_n <- survfit(Surv(time = ed_n$N_Days,event = ed_n$delta)~1, type = "kaplan-meier", conf.type="plain", conf.int=0.95, data = ed_n)
 ### conf.type="none","plain","log","log-log"
 plot(ajuste_ed_n)
@@ -307,7 +307,7 @@ plot(ajuste_ed_n)
 
 Superviviencia S (edema presente sin diuréticos o edema resuelto con diuréticos)
 
-```{r include=FALSE}
+```{r Edema S, include=FALSE}
 ajuste_ed_s <- survfit(Surv(time = ed_s$N_Days,event = ed_s$delta)~1, type = "kaplan-meier", conf.type="plain", conf.int=0.95, data = ed_s) 
 ### conf.type="none","plain","log","log-log"
 plot(ajuste_ed_s) 
@@ -315,12 +315,12 @@ plot(ajuste_ed_s)
 
 Supervivencia Y (edema a pesar del tratamiento con diuréticos) 
 
-```{r include=FALSE}
+```{r Edema Y, include=FALSE}
 ajuste_ed_y <- survfit(Surv(time = ed_y$N_Days,event = ed_y$delta)~1, type = "kaplan-meier", conf.type="plain", conf.int=0.95, data = ed_y) 
 ### conf.type="none","plain","log","log-log"
 ```
 
-```{r echo=FALSE}
+```{r Plot edemas, echo=FALSE}
 plot(ajuste_ed_n, col= "blue", main= "Estimador KM por Edema", lty = 1, lwd=3, xlim=c(0,4000),conf.int =F ) 
 par(new=T)
 plot(ajuste_ed_s, col ="salmon",main= "", lty = 1, lwd=3, xlim=c(0,4000),conf.int =F)
@@ -338,7 +338,7 @@ Vamos a proceder a elegir una variable que particione a nuestra población para 
 
 $Ho:$ La supervivencia es la misma para tipo 1 y 2 de enfermedad  $VS$  $Ha: Son diferentes$.
 
-```{r echo=FALSE}
+```{r Hip est1est2, echo=FALSE, message=FALSE}
 
 est1_est2= subset(x = base_nueva, base_nueva$Stage == 1 | base_nueva$Stage== 2 ) #estado 1 y 2 de la enfermedad
 survdiff(Surv(N_Days, delta) ~ est1_est2$Stage, rho = 0, data =est1_est2 )
@@ -349,7 +349,7 @@ No hay evidencia para no rechazar $Ho$, entonces la supervivencia para hombres y
 
 $Ho:$ La supervivencia es la misma para tipo 3 y 4 de enfermedad  $VS$  $Ha: Son diferentes$.
 
-```{r echo=FALSE}
+```{r Hip est3est4, echo=FALSE}
 
 est3_est4= subset(x = base_nueva, base_nueva$Stage == 3 | base_nueva$Stage== 4 ) #estado 1 y 2 de la enfermedad
 survdiff(Surv(N_Days, delta) ~ est3_est4$Stage, rho = 0, data =est3_est4 )
@@ -362,7 +362,7 @@ Concluimos que la población por estado de la enfermedad no tienen la misma func
 
 Veamos qué pasa para la supervivencia por hepatomegalia,es decir, si la presentó el paciente o no. 
 
-```{r}
+```{r Hip HepYHepN}
 base_hept= subset(x = base_nueva, base_nueva$Hepatomegaly == "Y" | base_nueva$Hepatomegaly == "N" ) 
 survdiff(Surv(N_Days, delta) ~ base_hept$Hepatomegaly, rho = 0, data =base_hept )
 ```
@@ -373,9 +373,21 @@ No hay evidencia para no rechazar $Ho$, entonces la supervivencia por hepatomega
 ## Modelo de riesgos proporcionales de Cox
 
 
+Ajustamos el modelo, con las variables ya estudiadas anteriormente
+
+```{r Modelos individuales, include=FALSE}
+modelo_cox = coxph(Surv(N_Days, delta) ~ Sex + factor(Stage) + Hepatomegaly + factor(Edema) , base_nueva)
+```
 
 
 
+Teniendo el siguiente modelo de riesgos proporcionales de cox
+
+```{r}
+summary(modelo_cox) 
+```
+
+De lo anterior notemos que las variables significativas son, evidentemente el sexo, así como los estadíos 3 y 4 de la enfermdad, asi mismo factores como la presencia de hepatomegalia en los pacientes y de edemas tipo S y Y, particularmente los pacientes con edemas de tipo S son aquellos que se trataron sin diuréticos o que se resolvió con diuréticos, y por otro lado, los pacientes con edemas de tipo Y son aquellos que a pesar que se les dió tratamiento no se quitó el edema.
 
 
 
