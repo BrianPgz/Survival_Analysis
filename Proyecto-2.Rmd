@@ -376,7 +376,7 @@ No hay evidencia para no rechazar $Ho$, entonces la supervivencia por hepatomega
 Ajustamos el modelo, con las variables ya estudiadas anteriormente
 
 ```{r Modelos individuales, include=FALSE}
-modelo_cox = coxph(Surv(N_Days, delta) ~ Sex + factor(Stage) + Hepatomegaly + factor(Edema) , base_nueva)
+modelo_cox = coxph(Surv(N_Days, delta) ~ Sex + factor(Stage) + Hepatomegaly + factor(Edema) +factor(Drug), base_nueva)
 ```
 
 
@@ -389,6 +389,17 @@ summary(modelo_cox)
 
 De lo anterior notemos que las variables significativas son, evidentemente el sexo, así como los estadíos 3 y 4 de la enfermdad, asi mismo factores como la presencia de hepatomegalia en los pacientes y de edemas tipo S y Y, particularmente los pacientes con edemas de tipo S son aquellos que se trataron sin diuréticos o que se resolvió con diuréticos, y por otro lado, los pacientes con edemas de tipo Y son aquellos que a pesar que se les dió tratamiento no se quitó el edema.
 
+
+```{r}
+prueba= ( 0.4977-.1  )/(0.2383) 
+pnorm(q=prueba, lower.tail = FALSE  )
+```
+
+
+```{r}
+sup = cox.zph(modelo_cox)
+sup
+```
 
 
 
