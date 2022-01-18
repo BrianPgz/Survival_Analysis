@@ -370,13 +370,15 @@ survdiff(Surv(N_Days, delta) ~ base_hept$Hepatomegaly, rho = 0, data =base_hept 
 No hay evidencia para no rechazar $Ho$, entonces la supervivencia por hepatomegalia es diferente si el paciente la presenta o no.
 
 
-## Modelo de riesgos proporcionales de Cox
+## Modelo de riesgos proporcionales de Cox {.tabset .tabset-fade .tabset-pills}
 
+
+### Ajuste del modelo
 
 Ajustamos el modelo, con las variables ya estudiadas anteriormente
 
-```{r Modelos individuales, include=FALSE}
-modelo_cox = coxph(Surv(N_Days, delta) ~ Sex + factor(Stage) + Hepatomegaly + factor(Edema) +factor(Drug), base_nueva)
+```{r Modelos variables, include=FALSE}
+modelo_cox = coxph(Surv(N_Days, delta) ~ Sex + factor(Stage) + Hepatomegaly + factor(Edema) , base_nueva)
 ```
 
 
@@ -384,22 +386,93 @@ modelo_cox = coxph(Surv(N_Days, delta) ~ Sex + factor(Stage) + Hepatomegaly + fa
 Teniendo el siguiente modelo de riesgos proporcionales de cox
 
 ```{r}
+modelo_cox
+```
+
+
+```{r}
 summary(modelo_cox) 
 ```
+
+
+### Estimación puntual e interpretación para los coeficientes de la regresión
 
 De lo anterior notemos que las variables significativas son, evidentemente el sexo, así como los estadíos 3 y 4 de la enfermdad, asi mismo factores como la presencia de hepatomegalia en los pacientes y de edemas tipo S y Y, particularmente los pacientes con edemas de tipo S son aquellos que se trataron sin diuréticos o que se resolvió con diuréticos, y por otro lado, los pacientes con edemas de tipo Y son aquellos que a pesar que se les dió tratamiento no se quitó el edema.
 
 
-```{r}
-prueba= ( 0.4977-.1  )/(0.2383) 
-pnorm(q=prueba, lower.tail = FALSE  )
-```
+Realizando la estimación puntual de los coeficientes de regresión, se da la intepretación a partir de los $\exp(coef)$, los cuales se asocian a la adversión o no al riesgo de muerte particularmente.
+
+Para la variable sexo, tenemos que los pacientes del género masculino presentan un riesgo de 1.6449 mayor en comparación con los pacientes del género femenino, además, dicho coeficiente de la covariable asociada al sexo, específicamente $\beta=0.4977$ presenta un nivel de significancia del 5% en el estudio, esto lo sabemos gracias a su p-value obtenido, el cual fue de 0.0368.
+
+Por otro lado, para los estadios de la enfermedad en la que se encuentre el paciente, tenemos que el hecho de estar en el estadio 3 representa un riesgo de muerte de 6.406 mayor en comparación a presentarse en el estadio 1 y 2, y drásticamente notamos como el riesgo aumenta al pasar al estadio 4, teniendo un riesgo de casi el doble al pasar del estadio 3, particularmente su valor es 11.580, es decir, el paciente tiene un riesgo muy elevado de muerte al estar en este estadio en comparación con los 3 primeros.
 
 
-```{r}
-sup = cox.zph(modelo_cox)
-sup
-```
+Así mismo, los coeficientes relacionados a las covariables asociadas a los estadios 3 y 4 representan un nivel de significancia del 10% y 5% respectivamente, siendo más representativo el estadio 3 a pesar de lo ya mencionado anteriormente para los pacientes en el estadio 4. 
 
 
+Pasando a la variable que representa hepatomegalia (agrandamiento el hígado), notamos que el riesgo de fallecer en caso de presentar este padecimiento es de 1.683 veces más en comparación a no tenerlo. Además, el nivel de significancia del coeficiente obtenido representa un 5% en el estudio.
+
+
+Finalmente para covariables asociadas a los tipos de edema S y Y (ya se aclaró previamente las características clínicas de cada uno), se obtuvo que los pacientes con edema catalogado como tipo S, presentan un riesgo de morir de 1.911 veces mayor en comparación a un paciente con edema del tipo N, por otro lado, para los pacientes con edema del tipo Y, notamos que drásticamente aumenta el riesgo en relación a los dos edemas anteriores, pues se tiene que un paciente con edema tipo Y es 6.640 veces más propenso a morir en comparación a un paciente catalogado con edema tipo S o tipo N.
+
+Además dichos coeficientes asociados a las covariables del edema tipo S y tipo Y representan un 5% y 0.1% respectivamente en el estudio.
+
+
+
+### Variables explicativas
+
+Como ya vimos en el punto anterior, de acuerdo a las variables empleadas en el modelo, obtuvimos distintos niveles de significancia los cuales catalogamos de la siguiente manera
+
+
++ Nivel del 10% 
+
+  * Estadio 3
+  
+  Para la variable de estadio particularmente en el estado 3 de la enfermedad, se considera que es significativa porque depende de si mejora o no el paciente y en caso de empeorar, ya se vio que el riesgo de muerte incrementa de manera alarmante.
+
++ Nivel del 5% 
+
+  * Sexo M 
+  
+  Se observa que los hombres son mas propensos a morir por la enfermedad
+
+  * Estadio 4
+  
+  En este estadio la probabilidad de muerte se incrementó de manera muy drástica en comparación a los otros estadios
+
+  * Hepatomegalia Y
+  
+  Era de esperar que una persona con el hígado mas grande sea más propenso a morir de cirrosis
+
+
+  * Edema S
+
+  Este tipo de edema es aquel en el cual el paciente presenta edemas sin el uso de diuréticos o puede resolverse por el uso de los diuréticos, es decir, es significante porque en caso de no resolverse, entonces el paciente podría pasar a un estado en el que el edema sea de tipo Y, es decir, el más crítico.
+  
++ Nivel del 0.01%
+  
+  * Edema Y 
+  
+  Básicamente el tipo de edema en el cual los pacientes son más propensos a morir
+
+### Intervalos de confianza para los coeficientes de regresión
+
+Se representan los intervalos por medio de la siguiente tabla 
+
+
+
+Table: **Intervalos de confianza**
+
+
+-----------------------------------------------
+
+|**Variable** | **lower 0.95** | **uper 0.95**|
+
+|-------------|----------------|--------------|
+
+### Proporción del riesgo de falla
+
+### ¿Existe mayor riesgo en distintos sujetos?
+
+### Validación del modelo de acuerdo al supuesto de riesgos proporcionales
 
