@@ -404,10 +404,10 @@ Realizando la estimación puntual de los coeficientes de regresión, se da la in
 
 Para la variable sexo, tenemos que los pacientes del género masculino presentan un riesgo de 1.6449 mayor en comparación con los pacientes del género femenino, además, dicho coeficiente de la covariable asociada al sexo, específicamente $\beta=0.4977$ presenta un nivel de significancia del 5% en el estudio, esto lo sabemos gracias a su p-value obtenido, el cual fue de 0.0368.
 
-Por otro lado, para los estadios de la enfermedad en la que se encuentre el paciente, tenemos que el hecho de estar en el estadio 3 representa un riesgo de muerte de 6.406 mayor en comparación a presentarse en el estadio 1 y 2, y drásticamente notamos como el riesgo aumenta al pasar al estadio 4, teniendo un riesgo de casi el doble al pasar del estadio 3, particularmente su valor es 11.580, es decir, el paciente tiene un riesgo muy elevado de muerte al estar en este estadio en comparación con los 3 primeros.
+Por otro lado, para los estadios de la enfermedad en la que se encuentre el paciente, tenemos que el hecho de estar en el estado 3 representa un riesgo de muerte de 6.406 mayor en comparación a presentarse en el estadio 1 y 2, y drásticamente notamos como el riesgo aumenta al pasar al estadio 4, teniendo un riesgo de casi el doble al pasar del estadio 3, particularmente su valor es 11.580, es decir, el paciente tiene un riesgo muy elevado de muerte al estar en este estadio en comparación con los 3 primeros.
 
 
-Así mismo, los coeficientes relacionados a las covariables asociadas a los estadios 3 y 4 representan un nivel de significancia del 10% y 5% respectivamente, siendo más representativo el estadio 3 a pesar de lo ya mencionado anteriormente para los pacientes en el estadio 4. 
+Así mismo, los coeficientes relacionados a las covariables asociadas a los estadios 3 y 4 representan un nivel de significancia del 10% y 5% respectivamente, siendo más representativo el estadio 3 a pesar de lo ya mencionado anteriormente para los pacientes en el estado 4. 
 
 
 Pasando a la variable que representa hepatomegalia (agrandamiento el hígado), notamos que el riesgo de fallecer en caso de presentar este padecimiento es de 1.683 veces más en comparación a no tenerlo. Además, el nivel de significancia del coeficiente obtenido representa un 5% en el estudio.
@@ -416,6 +416,8 @@ Pasando a la variable que representa hepatomegalia (agrandamiento el hígado), n
 Finalmente para covariables asociadas a los tipos de edema S y Y (ya se aclaró previamente las características clínicas de cada uno), se obtuvo que los pacientes con edema catalogado como tipo S, presentan un riesgo de morir de 1.911 veces mayor en comparación a un paciente con edema del tipo N, por otro lado, para los pacientes con edema del tipo Y, notamos que drásticamente aumenta el riesgo en relación a los dos edemas anteriores, pues se tiene que un paciente con edema tipo Y es 6.640 veces más propenso a morir en comparación a un paciente catalogado con edema tipo S o tipo N.
 
 Además dichos coeficientes asociados a las covariables del edema tipo S y tipo Y representan un 5% y 0.1% respectivamente en el estudio.
+
+Veamos si los riesgos son proporcionales: 
 
 
 
@@ -475,4 +477,25 @@ Table: **Intervalos de confianza**
 ### ¿Existe mayor riesgo en distintos sujetos?
 
 ### Validación del modelo de acuerdo al supuesto de riesgos proporcionales
+
+
+
+
+```{r}
+sup=cox.zph(modelo_cox)
+sup
+```
+
+Con un p-value global menor que alpha entonces rechazamos $Ho$, entonces los riesgos no son proporcionales, entonces el cociente de riesgos no es independiente del tiempo.
+
+```{r}
+ggcoxzph(sup)
+```
+
+
+
+
+
+
+
 
