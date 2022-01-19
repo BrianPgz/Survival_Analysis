@@ -487,6 +487,21 @@ sup = cox.zph(modelo_cox)
 sup
 ```
 
+Como el p-value global es muy pequeño, rechazamos $Ho$ entonces los riesgos no son proporcionales. 
+Aunque para Sexo y Hepatomegalia sí pasa la prueba.
+
+Veamos qué es lo que pasa graficamente: 
+
+
+
+```{r}
+ggcoxzph(sup)
+```
+
+Podemos ver que las Betas que tienen un mejor comportamiento es para Sexo y Hepatomegalia.
+
+
+
 ### ¿Existe mayor riesgo en distintos sujetos?
 
 
@@ -553,6 +568,8 @@ legend(x = "bottomleft", legend = c("SexoM.E4.Hep.EdS", "SexoM.E4.Hep.EdY", "Sex
 
 
 ### Validación del modelo de acuerdo al supuesto de riesgos proporcionales
+
+
 
 
 
