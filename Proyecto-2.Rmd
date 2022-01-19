@@ -557,20 +557,6 @@ legend(x = "bottomleft", legend = c("SexoM.E4.Hep.EdS", "SexoM.E4.Hep.EdY", "Sex
 
 
 
-```{r}
-sup=cox.zph(modelo_cox)
-sup
-```
-
-Con un p-value global menor que alpha entonces rechazamos $Ho$, entonces los riesgos no son proporcionales, entonces el cociente de riesgos no es independiente del tiempo.
-
-```{r}
-ggcoxzph(sup)
-```
-
-
-
-
 
 
 
