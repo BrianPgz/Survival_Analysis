@@ -567,6 +567,9 @@ legend(x = "bottomleft", legend = c("SexoM.E4.Hep.EdS", "SexoM.E4.Hep.EdY", "Sex
 ```
 
 
+
+
+
 ### Validación del modelo de acuerdo al supuesto de riesgos proporcionales
 
 
