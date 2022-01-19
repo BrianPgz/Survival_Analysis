@@ -487,20 +487,39 @@ sup = cox.zph(modelo_cox)
 sup
 ```
 
-Como el p-value global es muy pequeño, rechazamos $Ho$ entonces los riesgos no son proporcionales. 
-Aunque para Sexo y Hepatomegalia sí pasa la prueba.
+Como el p-value global es muy pequeño, rechazamos $Ho$ entonces los riesgos no son proporcionales. Aunque para Sexo y Hepatomegalia sí pasa la prueba.
 
 Veamos qué es lo que pasa graficamente: 
-
-
 
 ```{r}
 ggcoxzph(sup)
 ```
 
-Podemos ver que las Betas que tienen un mejor comportamiento es para Sexo y Hepatomegalia.
+Podemos ver que las Betas que tienen un mejor comportamiento es para Sexo y Hepatomegalia. Particularmente para los casos de las variables de Estado y de Edema, notamos que hay valores de p-valor atípicos.
 
 
+Por lo tanto generamos un modelo de cox extendido con la transformación de raiz cuadrada del tiempo 
+
+```{r warning=FALSE}
+modelo_cox_ext = coxph(Surv(N_Days, delta) ~ Sex + factor(Stage)*sqrt(N_Days) + Hepatomegaly + factor(Edema)*sqrt(N_Days) , base_nueva)
+```
+
+Verificando ahora si es un modelo de riesgos proporcionales, verificamos con el test
+
+
+```{r}
+sup_ext = cox.zph(modelo_cox_ext)
+sup_ext
+```
+
+Y de manera análoga los respectivos plots
+
+```{r}
+ggcoxzph(sup_ext)
+
+```
+
+Es decir, ahora nuestro nuevo modelo si cumple ser de riesgos proporcionales al tiempo.
 
 ### ¿Existe mayor riesgo en distintos sujetos?
 
@@ -572,12 +591,56 @@ legend(x = "bottomleft", legend = c("SexoM.E4.Hep.EdS", "SexoM.E4.Hep.EdY", "Sex
 
 ### Validación del modelo de acuerdo al supuesto de riesgos proporcionales
 
+Como nuestro nuevo modelo con la transformación del tiempo (raíz cuadrada del tiempo) ya cumple con ser de riesgos proporcionales, por lo tanto analizaremos ahora los residuos y la validación del modelo.
 
 
+```{r echo=FALSE, warning=FALSE}
+ggcoxdiagnostics(modelo_cox_ext, type = "schoenfeld")
+```
+
+Linealidad de las covariables (residuos martingala)
+
+```{r}
+residuales = residuals(modelo_cox_ext, type = "martingale")
+modelo_cox_ext = coxph(Surv(N_Days, delta) ~ Sex + factor(Stage)*sqrt(N_Days) + Hepatomegaly + factor(Edema)*sqrt(N_Days) , base_nueva)
+```
+
+Para cada variable
 
 
+```{r echo=FALSE, warning=FALSE}
+dev = residuals(modelo_cox_ext, type = "deviance")
+min(dev)
+max(dev)
+summary(dev)
 
+# Graficamos
+plot(dev, col = "purple", main = "Residuos de devianza",
+     xlab = "ID", ylab = "dev", pch = 20, ylim = c(-3,3))
+abline(h = c(-1, 1), col = "plum")
+abline(h = c(-2.5, 2.5), col = "lightsalmon")
 
+# Casos extremos:
+dev[abs(dev) >= 1] # Posicion
+base_nueva[c(21,105,210,265),]
+```
 
+```{r echo=FALSE}
+
+dfbeta = resid(modelo_cox_ext, type = "dfbeta")
+
+# graficamos para cada covariable
+plot(dfbeta[,1], col ="purple", pch = 20, main = "Dfbeta - Sexo",
+     ylab = "Dfbeta.edad")
+
+plot(dfbeta[,2], col ="purple", pch = 20, main = "Dfbeta - Estado",
+     ylab = "Dfbeta.abuso")
+
+plot(dfbeta[,3], col ="purple", pch = 20, main = "Dfbeta - Hepatomegalia",
+     ylab = "Dfbeta.abuso")
+
+plot(dfbeta[,4], col ="purple", pch = 20, main = "Dfbeta - Edema",
+     ylab = "Dfbeta.abuso")
+```
 
 
