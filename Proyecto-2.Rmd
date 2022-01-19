@@ -462,19 +462,95 @@ Como ya vimos en el punto anterior, de acuerdo a las variables empleadas en el m
 Se representan los intervalos por medio de la siguiente tabla 
 
 
-
-Table: **Intervalos de confianza**
-
-
------------------------------------------------
+**Intervalos de confianza**
 
 |**Variable** | **lower 0.95** | **uper 0.95**|
-
 |-------------|----------------|--------------|
+|*SexM*|1.0311|2.624|
+|*Stage3*|0.8639|47.507|
+|*Stage4*|1.5351|87.348|
+|*EdemaS*|1.1278|3.237|
+|*EdemaY*|3.9019|11.299|
+|*HepatomegalyY*|1.0819|2.620|
+
 
 ### Proporción del riesgo de falla
 
+Utilizamos la funcion cox.zph para hacer el test al modelo 
+
+$$H_0: \text{Los riesgos son proporcionales} \quad vs \quad  
+\quad H_a\text{:Los riesgos no son proporcionales}$$
+
+
+```{r}
+sup = cox.zph(modelo_cox)
+sup
+```
+
 ### ¿Existe mayor riesgo en distintos sujetos?
+
+
+Para contestar esta pregunta analizaremos distintos tipos de modelos
+
+Comenzamos por analizar un modelo que tengo únicamente el sexo y el estadio de la enfermedad
+
+```{r Modelo sexo y estado, include=FALSE}
+modelo_sexovsestadio = coxph(Surv(N_Days, delta) ~ Sex + factor(Stage), base_nueva)
+```
+
+
+```{r Plot modelo sexo y estado, echo=FALSE}
+infoM3 = data.frame(Sex="M", Stage=3)
+infoM4 = data.frame(Sex="M", Stage=4)
+infoF3 = data.frame(Sex="F", Stage=3)
+infoF4 = data.frame(Sex="F", Stage=4)
+
+fitM3 = survfit(modelo_sexovsestadio, newdata = infoM3)
+fitM4 = survfit(modelo_sexovsestadio, newdata = infoM4)
+fitF3 = survfit(modelo_sexovsestadio, newdata = infoF3)
+fitF4 = survfit(modelo_sexovsestadio, newdata = infoF4)
+
+
+plot(fitM3, conf.int = FALSE, col = "cornflowerblue", lwd = 3, lty =3,
+     main = "Comparacion de supervivencias por sexo y estadios 3 y 4")
+par(new = TRUE)
+plot(fitM4, conf.int = FALSE, col = "purple", lwd = 3, lty = 1)
+par(new = TRUE)
+plot(fitF3, conf.int = FALSE, col = "green" ,lwd = 3, lty = 3)
+par(new = TRUE)
+plot(fitF4, conf.int = FALSE, col = "red", lwd = 3, lty = 1)
+legend(x = "bottomleft", legend = c("Sexo M Estado 3", "Sexo M Estado 4", "Sexo F Estado 3" , "Sexo F Estado 4"), lty = c(3,1,3,1), 
+       col = c("cornflowerblue","purple", "green","red"), lwd=3)
+```
+
+
+A partir de este modelo, nos quedaremos con la curva de los pacientes cuyo estadio sea 4 y de ambos géneros, sólo que agregaremos el supuesto de hepatomegalia (confirmada) y además el tipo de edema S o Y. 
+
+
+```{r Sexo E4 H ES, echo=FALSE}
+infoM4HES = data.frame(Sex="M", Stage=4, Hepatomegaly ="Y", Edema = "S")
+infoM4HEY = data.frame(Sex="M", Stage=4, Hepatomegaly ="Y", Edema = "Y")
+infoF4HES = data.frame(Sex="F", Stage=4, Hepatomegaly ="Y", Edema = "S")
+infoF4HEY= data.frame(Sex="F", Stage=4, Hepatomegaly ="Y", Edema = "Y")
+
+
+fitM4HES = survfit(modelo_cox, newdata = infoM4HES)
+fitM4HEY = survfit(modelo_cox, newdata = infoM4HEY)
+fitF4HES = survfit(modelo_cox, newdata = infoF4HES)
+fitF4HEY = survfit(modelo_cox, newdata = infoF4HEY)
+
+plot(fitM4HES, conf.int = FALSE, col = "cornflowerblue", lwd = 3, lty =3,
+     main = "Comparacion de supervivencias por sexo,est4, hep y edema(S o Y)")
+par(new = TRUE)
+plot(fitM4HEY, conf.int = FALSE, col = "purple", lwd = 3, lty = 1)
+par(new = TRUE)
+plot(fitF4HES, conf.int = FALSE, col = "green" ,lwd = 3, lty = 3)
+par(new = TRUE)
+plot(fitF4HEY, conf.int = FALSE, col = "red", lwd = 3, lty = 1)
+legend(x = "bottomleft", legend = c("SexoM.E4.Hep.EdS", "SexoM.E4.Hep.EdY", "SexoF.E4.Hep.EdS" , "SexoF.E4.Hep.EdY"), lty = c(3,1,3,1), 
+       col = c("cornflowerblue","purple", "green","red"), lwd=3)
+```
+
 
 ### Validación del modelo de acuerdo al supuesto de riesgos proporcionales
 
